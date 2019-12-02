@@ -21,7 +21,6 @@ EbNoVec = (0:10)';
 snrVec = EbNoVec + 10*log10(k) + 10*log10(numDC/numSC);
 % snrVec = [0.25, 0.5, 0.75, 1.0, 1.25, 7];
 totalFrames = ceil(length(encodedData) / frameSize);
-
 lengthEncodedData = length(encodedData);
 if ((totalFrames * frameSize) > lengthEncodedData)
     encodedData = [encodedData; zeros((totalFrames * frameSize) - length(encodedData), 1)];
@@ -31,7 +30,10 @@ end
 errorRate = comm.ErrorRate('ResetInputPort',true);
 berVec = zeros(length(snrVec),3);
 errorStats = zeros(1,3);
-
+image = writeImage(data);
+figure
+subplot(3,4,1); imshow(image);
+title('Imagen original'); hold on
 for x = 1:length(snrVec)
     snr = snrVec(x);
     from = 1; to = frameSize;
@@ -49,8 +51,7 @@ for x = 1:length(snrVec)
         
         %% Ruido
         % channelData = awgn(txSig, snr, 'measured');
-        channel = comm.AWGNChannel('NoiseMethod','Variance', ...
-            'VarianceSource','Input port');
+        channel = comm.AWGNChannel('NoiseMethod','Variance', 'VarianceSource','Input port');
         powerDB = 10*log10(var(txSig));
         noiseVar = 10.^(0.1*(powerDB - snr));
         channelData = channel(txSig,noiseVar);
@@ -65,12 +66,15 @@ for x = 1:length(snrVec)
     end
     
     %% Calc BER
-    berVec(x,:) = errorStats;                         % Save BER data
-    errorStats = errorRate(contentTx, demodulatedData, 1);         % Reset the error rate calculator
+    berVec(x,:) = errorStats; % Save BER data
+    errorStats = errorRate(contentTx, demodulatedData, 1); % Reset the error rate calculator
 
     %% Creando imagen p/c SNR
     receivedImage = decodification(receivedData(1:lengthEncodedData), intrlvrInd);
-    writeImage(~receivedImage(1:length(data)));
+    image = writeImage(~receivedImage(1:length(data)));
+    subplot(3,4,x+1); imshow(image);
+    titulo = strcat('Valor de SNR: ', num2str(snr)); title(titulo);
+    hold on
+    
 end
-
 printBer(EbNoVec, M, berVec)

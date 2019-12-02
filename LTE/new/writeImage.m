@@ -1,4 +1,4 @@
-function writeImage(data)
+function img = writeImage(data)
 %UNTITLED16 Summary of this function goes here
 %   Detailed explanation goes here
     imageResized=reshape(data, 400, 400);
@@ -12,8 +12,6 @@ function writeImage(data)
         end
     end
     disp('Imagen recibida');
-    figure;
-    title('Imagen recibida');
-    imshow(imageResized')
+    img = imageResized';
 end
 
