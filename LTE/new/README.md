@@ -51,3 +51,4 @@ Para agregar o modificar una imagen, dirigirse hacia `../img/`
 - https://la.mathworks.com/help/comm/ug/estimate-turbo-code-ber-performance-in-awgn.html
 - https://la.mathworks.com/help/comm/gs/qpsk-and-ofdm-with-matlab-system-objects-1.html
 - https://la.mathworks.com/help/comm/ref/comm.ldpcencoder-system-object.html#bsyh0xo-5
+- https://www.mathworks.com/matlabcentral/fileexchange/35964-qpsk-over-rayleigh-fading-channel
