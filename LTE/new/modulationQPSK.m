@@ -1,6 +1,5 @@
 function output = modulationQPSK(data)
-%UNTITLED2 Summary of this function goes here
-%   Detailed explanation goes here
+%MODULATIONQPSK Modular los datos con QPSK
     qpskMod = comm.QPSKModulator('BitInput',true);
     output = qpskMod(data);
 end

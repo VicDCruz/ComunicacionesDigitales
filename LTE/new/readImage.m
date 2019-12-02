@@ -1,5 +1,5 @@
 function output = readImage(path)
-    %READIMAGE Convertir imagen a bits
+%READIMAGE Convertir imagen a bits
     cd(pwd);
     cd('../img');
     data = imread(path);

@@ -40,7 +40,7 @@ Este proyecto cuenta con una carpeta de imágenes para analizar diferentes casos
 Para agregar o modificar una imagen, dirigirse hacia `../img/`
 
 
-## Funcionamiento
+## Funcionamiento (Para correr)
 - Para correr el sistema, ver `Main.m`, después elegir las opciones
     1. Elegir el tipo de ruido (AWGN o Rayleigh)
     2. Elegir el tipo de información (Bits random o Imagen precargada)
@@ -52,3 +52,4 @@ Para agregar o modificar una imagen, dirigirse hacia `../img/`
 - https://la.mathworks.com/help/comm/gs/qpsk-and-ofdm-with-matlab-system-objects-1.html
 - https://la.mathworks.com/help/comm/ref/comm.ldpcencoder-system-object.html#bsyh0xo-5
 - https://www.mathworks.com/matlabcentral/fileexchange/35964-qpsk-over-rayleigh-fading-channel
+- https://www.mathworks.com/matlabcentral/fileexchange/30477-ber-curve-for-bpsk-in-rayleigh-channel

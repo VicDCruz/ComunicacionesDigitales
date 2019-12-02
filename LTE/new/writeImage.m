@@ -1,6 +1,5 @@
 function img = writeImage(data)
-%UNTITLED16 Summary of this function goes here
-%   Detailed explanation goes here
+%WRITEIMAGE Convertir bits en imagen y desplegarla
     imageResized=reshape(data, 400, 400);
     for i = 1:1:400
         for j = 1:1:400

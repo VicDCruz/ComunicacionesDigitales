@@ -20,16 +20,16 @@ encodedData = codification(data, intrlvrInd);
 
 %% Init variables
 disp('Inicializando variables')
-M = 4;                 % Modulation alphabet
-k = log2(M);           % Bits/symbol
-numSC = 128;           % Number of OFDM subcarriers
-cpLen = 32;            % OFDM cyclic prefix length
-maxBitErrors = 100;    % Maximum number of bit errors
-maxNumBits = 1e7;      % Maximum number of bits transmitted
+M = 4; % Modulación
+k = log2(M); % Bits / symb
+numSC = 128; % # de subcarriers
+cpLen = 32; % Largo del prefijo cíclico para OFDMC
+maxBitErrors = 100; % Max num de bit error
+maxNumBits = 1e7; % Max num de bits transmitidos
 numDC = getSubcarriers(numSC, cpLen);
 frameSize = k * numDC;
 EbNoVec = (0:10)';
-snrVec = EbNoVec + 10*log10(k) + 10*log10(numDC/numSC);
+snrVec = EbNoVec + 10 * log10(k) + 10 * log10(numDC/numSC);
 % snrVec = [0.25, 0.5, 0.75, 1.0, 1.25, 7];
 totalFrames = ceil(length(encodedData) / frameSize);
 lengthEncodedData = length(encodedData);
@@ -38,16 +38,12 @@ if ((totalFrames * frameSize) > lengthEncodedData)
 end
 
 %% Init BER
-errorRateDemod = comm.ErrorRate('ResetInputPort',true);
-berDemod = zeros(length(snrVec),3);
-errorStatsDemod = zeros(1,3);
-
-errorRateMod = comm.ErrorRate('ResetInputPort',true);
-berMod = zeros(length(snrVec),3);
+errorRateMod = comm.ErrorRate('ResetInputPort', true);
+berMod = zeros(length(snrVec), 3);
 errorStatsMod = zeros(1,3);
 
-errorRateCod = comm.ErrorRate('ResetInputPort',true);
-berCod = zeros(length(snrVec),3);
+errorRateCod = comm.ErrorRate('ResetInputPort', true);
+berCod = zeros(length(snrVec), 3);
 errorStatsCod = zeros(1,3);
 
 image = writeImage(data);
@@ -78,7 +74,7 @@ for x = 1:length(snrVec)
             noiseVar = 10.^(0.1*(powerDB - snr));
             channelData = channel(txSig, noiseVar);
         else
-            channelData = rayleigh(txSig);
+            channelData = rayleigh(txSig, snr);
         end
         
         %% RX
@@ -86,13 +82,13 @@ for x = 1:length(snrVec)
         demodulatedData = demodulationQPSK(rxSig);
         receivedData = [receivedData; demodulatedData];
         
-        %% Calc Ber
-        errorStatsDemod = errorRateDemod(contentTx, demodulatedData,0);
+        %% Calc BER modulation
+        errorStatsMod = errorRateMod(contentTx, demodulatedData,0);
     end
     
-    %% Calc BER
-    berDemod(x,:) = errorStatsDemod;                         % Save BER data
-    errorStatsDemod = errorRateDemod(contentTx, demodulatedData, 1);         % Reset the error rate calculator
+    %% Calc BER modulation
+    berMod(x,:) = errorStatsMod; % Guardar datos de BER
+    errorStatsMod = errorRateMod(contentTx, demodulatedData, 1); % Reset del error rate calculator
 
     %% Creando imagen p/c SNR
     receivedImage = decodification(receivedData(1:lengthEncodedData), intrlvrInd);
@@ -101,6 +97,13 @@ for x = 1:length(snrVec)
     titulo = strcat('Valor de SNR: ', num2str(snr)); title(titulo);
     hold on
     
+    %% Calc BER encode
+    checkData = double(~receivedImage);
+    errorStatsCod = errorRateCod(data, checkData, 0);
+    berCod(x,:) = errorStatsCod;
+    errorStatsCod = errorRateCod(data, checkData, 1);
+    
 end
 
-printBer(EbNoVec, M, berDemod)
+printBer(EbNoVec, M, berMod, 'BER en la modulaci�n', 0)
+printBer(EbNoVec, M, berCod, 'BER en la codificaci�n', 1)
