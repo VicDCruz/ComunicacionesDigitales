@@ -1,9 +1,20 @@
 clear all; close all; clc;
 
+%% Selección de ruido
+noiseType = input('Tipo de ruido, AWGN(0) / Rayleigh(1): ', 's');
+dataType = input('Tipo de dato, Imagen(0) / Bits random(1): ', 's');
+
 %% Data
-disp('Cargando imagen')
-% data = logical(randi([0 1], 32400, 1));
-data = readImage('example.jpg')';
+disp('Cargando datos')
+if (dataType == '1')
+    data = randi([0 1], 160000, 1);
+else
+    path = input('Nombre del archivo (Enter - default): ', 's');
+    if (path == "")
+        path = 'peppers.png';
+    end
+    data = readImage(path)';
+end
 intrlvrInd = randperm(length(data));
 encodedData = codification(data, intrlvrInd);
 
@@ -28,9 +39,17 @@ if ((totalFrames * frameSize) > lengthEncodedData)
 end
 
 %% Init BER
-errorRate = comm.ErrorRate('ResetInputPort',true);
-berVec = zeros(length(snrVec),3);
-errorStats = zeros(1,3);
+errorRateDemod = comm.ErrorRate('ResetInputPort',true);
+berDemod = zeros(length(snrVec),3);
+errorStatsDemod = zeros(1,3);
+
+errorRateMod = comm.ErrorRate('ResetInputPort',true);
+berMod = zeros(length(snrVec),3);
+errorStatsMod = zeros(1,3);
+
+errorRateCod = comm.ErrorRate('ResetInputPort',true);
+berCod = zeros(length(snrVec),3);
+errorStatsCod = zeros(1,3);
 
 for x = 1:length(snrVec)
     snr = snrVec(x);
@@ -48,12 +67,15 @@ for x = 1:length(snrVec)
         txSig = modulationOfdm(modulatedData, numSC, cpLen);
         
         %% Ruido
-        % channelData = awgn(txSig, snr, 'measured');
-        channel = comm.AWGNChannel('NoiseMethod','Variance', ...
-            'VarianceSource','Input port');
-        powerDB = 10*log10(var(txSig));
-        noiseVar = 10.^(0.1*(powerDB - snr));
-        channelData = channel(txSig,noiseVar);
+        if (noiseType == '0')
+            channel = comm.AWGNChannel('NoiseMethod','Variance', ...
+                'VarianceSource','Input port');
+            powerDB = 10*log10(var(txSig));
+            noiseVar = 10.^(0.1*(powerDB - snr));
+            channelData = channel(txSig, noiseVar);
+        else
+            channelData = rayleigh(txSig);
+        end
         
         %% RX
         rxSig = demodulationOfdm(channelData, numSC, cpLen);
@@ -61,16 +83,16 @@ for x = 1:length(snrVec)
         receivedData = [receivedData; demodulatedData];
         
         %% Calc Ber
-        errorStats = errorRate(contentTx, demodulatedData,0);
+        errorStatsDemod = errorRateDemod(contentTx, demodulatedData,0);
     end
     
     %% Calc BER
-    berVec(x,:) = errorStats;                         % Save BER data
-    errorStats = errorRate(contentTx, demodulatedData, 1);         % Reset the error rate calculator
+    berDemod(x,:) = errorStatsDemod;                         % Save BER data
+    errorStatsDemod = errorRateDemod(contentTx, demodulatedData, 1);         % Reset the error rate calculator
 
     %% Creando imagen p/c SNR
     receivedImage = decodification(receivedData(1:lengthEncodedData), intrlvrInd);
     writeImage(~receivedImage(1:length(data)));
 end
 
-printBer(EbNoVec, M, berVec)
+printBer(EbNoVec, M, berDemod)
