@@ -1,6 +1,6 @@
 clear all; close all; clc;
 
-%% Selección de ruido
+%% Selecciï¿½n de ruido
 noiseType = input('Tipo de ruido, AWGN(0) / Rayleigh(1): ', 's');
 dataType = input('Tipo de dato, Imagen(0) / Bits random(1): ', 's');
 
@@ -32,7 +32,6 @@ EbNoVec = (0:10)';
 snrVec = EbNoVec + 10*log10(k) + 10*log10(numDC/numSC);
 % snrVec = [0.25, 0.5, 0.75, 1.0, 1.25, 7];
 totalFrames = ceil(length(encodedData) / frameSize);
-
 lengthEncodedData = length(encodedData);
 if ((totalFrames * frameSize) > lengthEncodedData)
     encodedData = [encodedData; zeros((totalFrames * frameSize) - length(encodedData), 1)];
@@ -50,6 +49,11 @@ errorStatsMod = zeros(1,3);
 errorRateCod = comm.ErrorRate('ResetInputPort',true);
 berCod = zeros(length(snrVec),3);
 errorStatsCod = zeros(1,3);
+
+image = writeImage(data);
+figure
+subplot(3,4,1); imshow(image);
+title('Imagen original'); hold on
 
 for x = 1:length(snrVec)
     snr = snrVec(x);
@@ -92,7 +96,11 @@ for x = 1:length(snrVec)
 
     %% Creando imagen p/c SNR
     receivedImage = decodification(receivedData(1:lengthEncodedData), intrlvrInd);
-    writeImage(~receivedImage(1:length(data)));
+    image = writeImage(~receivedImage(1:length(data)));
+    subplot(3,4,x+1); imshow(image);
+    titulo = strcat('Valor de SNR: ', num2str(snr)); title(titulo);
+    hold on
+    
 end
 
 printBer(EbNoVec, M, berDemod)
