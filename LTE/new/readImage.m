@@ -1,7 +1,7 @@
 function output = readImage(path)
     %READIMAGE Convertir imagen a bits
     cd(pwd);
-    cd('img');
+    cd('../img');
     data = imread(path);
     data = imbinarize(data); % to B&W
     data = data(:,:,1);
@@ -12,7 +12,7 @@ function output = readImage(path)
     resized = imresize(data, [400 400]);
     resized = im2double(resized);
     resized = fix(resized);
-    cd('..');
+    cd('../new');
     output = reshape(resized', 1, 160000);
 end
 

@@ -18,6 +18,9 @@ if(choice==2)
 end
 lengthData = length(data);
 
+%% Codificacion LDPC
+% data = codification(data, length(data));
+
 N = 512; % Num de subcarriers, tamaño de FFT
 SNR = [-10 -5 -2.5 0 2.5 5 7.5 10 12.5 15 20 25 ];
 count = 0;
@@ -54,7 +57,7 @@ cellId = 1;
 for slotNumber = 1:40 % slotNumber - slot number within a radio frame
     for m = 1:3:4 % m - OFDM symbol number within the slot, first and fifth slots.
         cInit = power(2, 10) * (7 * (slotNumber + 1) + m + 1) * (2 * cellId + 1) + 2 * cellId + Ncp;
-        b = dec2bin2(cInit); % decimal to binary vector
+        b = de2bi(cInit); % decimal to binary vector
 
         for x = length(b):-1:1
             x2(x) = b(x);
@@ -79,19 +82,19 @@ end
 disp('Señal piloto')
 toPrint = input('Dominio del Tiempo y Freq y constelación QPSK (S / N) - ', 's');
 if (toPrint == 'S' || toPrint == 's')
-    from = floor(rand() * length(pilot) * 0.90) + 1;
+    from = floor(rand() * length(pilotMatrix) * 0.90) + 1;
     to = from + 100;
     figure;
     subplot(2, 1, 1);
-    timeDomain(real(pilot(from:to)), 'B', 'Resp en T de 100 muestras QPSK del piloto');
+    timeDomain(real(pilotMatrix(from:to)), 'B', 'Resp en T de 100 muestras QPSK del piloto');
     hold on;
-    timeDomain(imag(pilot(from:to)), 'R', 'Resp en T de 100 muestras QPSK del piloto');
+    timeDomain(imag(pilotMatrix(from:to)), 'R', 'Resp en T de 100 muestras QPSK del piloto');
     legend('Real', 'Imaginario');
     subplot(2, 1, 2);
-    frequencyDomain(pilot(from:to), 'B', 'Resp en F de 100 muestras QPSK del piloto');
+    frequencyDomain(pilotMatrix(from:to), 'B', 'Resp en F de 100 muestras QPSK del piloto');
 
     figure;
-    scatter(real(pilot), imag(pilot));
+    scatter(real(pilotMatrix), imag(pilotMatrix));
     xlabel('Fase');
     ylabel('Cuadratura');
     title('Constelación de los símbolos del piloto')
@@ -105,13 +108,13 @@ for slot = 1:frameSpace
         % Taking the first 1200 data bits and modulating it using QAM
         % In this case symbol data is present in 300 carriers
         if (rem(symbol - 1, 4) ~= 0)
-            dataSymbol = modulatorQAM(data(dataCounter:dataCounter+1199));
+            dataSymbol = modulatorQAM(data(dataCounter:(dataCounter + 1199)));
             dataCounter = dataCounter + 1200;
 
         % In this case symbol data is present in 250 carriers and hence 
         % we modulate the first 1000 bits only %
         else
-            dataSymbol = modulatorQAM(data(dataCounter:dataCounter+999));
+            dataSymbol = modulatorQAM(data(dataCounter:(dataCounter + 999)));
             dataCounter = dataCounter + 1000;
         end
         
@@ -345,7 +348,7 @@ for slot = 1:frameSpace
                 end
             end
             
-            %% Muestreador
+            %% DesMuestreador
             if(channelType == 0)
                 downsampledData = downsampling(filterRx);
             else
@@ -373,7 +376,7 @@ for slot = 1:frameSpace
             demodulatedData = demodulatorQAM(demultiplexedData);
             rxData(x, (r + 1):(r + length(demodulatedData))) = demodulatedData;
             
-            %% Checkpoint 3.b-Demodulated signal(200 samples) in timeDomain and frequency domain 
+            %% Demodulated signal(200 samples) in timeDomain and frequency domain 
             if(count==0)
                 disp('Checkpoint 3.b-Demodulated signal(200 samples) in timeDomain and frequency domain for SNR=-10dB ');
                 pause
@@ -429,7 +432,10 @@ for slot = 1:frameSpace
         end
         r = r + length(demodulatedData);
     end    
-end    
+end
+
+%% Decodificacion LDPC
+% rxDataDecod = decodification(rxData(12,:), length(rxData(12,:)));
 
 %% Imagen recibida
 if(choice == 2)
@@ -437,16 +443,16 @@ if(choice == 2)
 end
 
 %% BER
-k=4;
-for x=1:length(SNR)
-   error(x) = length(find(xor(data(1:8000), rxData(x,1:8000)))) / 8000;
-   theoryBer = (1/k) * 3/2 * erfc(sqrt(k * 0.1 * (10.^(SNR / 10))));
+k = 4;
+for x = 1:length(SNR)
+   ber(x) = length(find(xor(data(1:8000), rxData(x,1:8000)))) / 8000;
 end
+theoryBer = (1/k) * 3/2 * erfc(sqrt(k * 0.1 * (10.^(SNR / 10))));
 
 figure;
-semilogy(SNR,error,'B');
+semilogy(SNR, ber, 'B');
 hold on
-semilogy(SNR,theoryBer,'R');
+semilogy(SNR, theoryBer, 'R');
 title('Curva de BER');
 xlabel('SNR'); ylabel('BER');
 axis([-10 20 10^-2.6 1]);
