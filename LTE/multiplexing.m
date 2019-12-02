@@ -10,7 +10,7 @@ function output = multiplexing(data, pilot, symbol)
         for i = 1:1:loop
             if (mod(i, 6) == 0)
                 output(i) = pilot(pilotCounter);
-                pilotCounter = pilotCounter+1;
+                pilotCounter = pilotCounter + 1;
             else 
                 output(i) = data(dataCounter);
                 dataCounter = dataCounter+1;
