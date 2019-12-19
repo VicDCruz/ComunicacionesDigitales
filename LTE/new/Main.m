@@ -51,7 +51,7 @@ figure
 subplot(3,4,1); imshow(image);
 title('Imagen original'); hold on
 
-for x = 1:length(snrVec)
+parfor x = 1:length(snrVec)
     snr = snrVec(x);
     from = 1; to = frameSize;
     receivedData = [];
